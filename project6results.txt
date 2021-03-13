@@ -1,0 +1,78 @@
+mean:
+exam1     74.053
+exam2     75.035
+exam3     74.935
+exam4     74.774
+exam5     73.692
+exam6     75.048
+exam7     75.077
+exam8     75.319
+exam9     74.098
+exam10    74.855
+dtype: float64
+mode:
+   exam1  exam2  exam3  exam4  exam5  exam6  exam7  exam8  exam9  exam10
+0   50.0   78.0     55   91.0     52   82.0   57.0   79.0   98.0    80.0
+1    NaN    NaN     94    NaN     65    NaN    NaN    NaN    NaN     NaN
+median:
+exam1     74.0
+exam2     76.0
+exam3     75.0
+exam4     75.0
+exam5     73.0
+exam6     75.0
+exam7     76.0
+exam8     77.0
+exam9     74.0
+exam10    75.0
+dtype: float64
+standard deviation:
+exam1     14.676907
+exam2     14.543015
+exam3     14.581337
+exam4     14.491271
+exam5     14.591369
+exam6     14.314839
+exam7     14.743828
+exam8     14.486929
+exam9     14.585099
+exam10    14.431710
+dtype: float64
+Column headers:
+['exam1', 'exam2', 'exam3', 'exam4', 'exam5', 'exam6', 'exam7', 'exam8', 'exam9', 'exam10']
+Row 8 pulled:
+exam1     83
+exam2     91
+exam3     90
+exam4     78
+exam5     59
+exam6     59
+exam7     73
+exam8     85
+exam9     77
+exam10    98
+Name: 8, dtype: int64
+Row 4 pulled:
+exam1     89
+exam2     77
+exam3     55
+exam4     74
+exam5     82
+exam6     61
+exam7     84
+exam8     90
+exam9     75
+exam10    92
+Name: 4, dtype: int64
+Row 6 pulled:
+exam1     68
+exam2     99
+exam3     97
+exam4     76
+exam5     86
+exam6     60
+exam7     96
+exam8     98
+exam9     75
+exam10    87
+Name: 6, dtype: int64
