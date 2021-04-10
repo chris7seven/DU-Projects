@@ -1,0 +1,138 @@
+---
+title: "FinalProject"
+output:
+  word_document: default
+  html_document: default
+---
+###########################################################
+# This file conducts a time series analysis on vaccinations 
+# in the US and forecasts when all adults will receive one.
+###########################################################
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###########################################################
+# Loading in the data and converting it to a time series.
+###########################################################
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggpubr)
+library(tseries)
+library(astsa)
+library(stats)
+library(forecast)
+library(fpp2)
+library(knitr)
+library(lubridate)
+
+totaldata<-read.csv("projectdata.csv", skip=3)
+
+data<-subset(totaldata, Date.Type == "Admin", select=c("Date", "Total.Doses.Administered.Daily"))
+
+data$Total.Doses.Administered.Daily <- as.numeric(data$Total.Doses.Administered.Daily)
+
+datafinal <- data %>% group_by(Date=data$Date) %>% summarize(TotalVaccinations = sum(Total.Doses.Administered.Daily))
+datafinal<-head(datafinal, -3)
+datafinal
+vectorvalues<- datafinal$TotalVaccinations
+
+myts <- ts(vectorvalues, start=decimal_date(ymd("2020-12-14")), frequency=7)
+```
+
+###########################################################
+# First look at the data.
+###########################################################
+
+```{r}
+# Initially plotting the time series with a best fit line.
+plot.ts(myts, ylab="Vaccines Administered", main="Vaccines Administered Per Day")+abline(reg=lm(myts~time(myts)))
+```
+
+# Strong trend in the data, with seasonality suspected as well.
+
+```{r}
+# Plotting the difference to see if we can make the data stationary.
+plot.ts(diff(myts), ylab="Vaccines Administered", main="Vaccines Administered Per Day")
+
+# Since we still have increasing variance in the data, we will take the natural log as well.
+plot.ts(diff(log(myts)), main="Difference of the Log of the Time Series")
+adf.test(diff(log(myts))) # p-value of <.01 indicated our data is stationary
+kpss.test(diff(log(myts)), null="Trend") # p-value of .1 indicates we accept null that is trend stationary
+
+
+# Since this appears to be trend-stationary, we will now plot the seasonality of the data.
+ggseasonplot(diff(log(myts)))
+ggsubseriesplot(diff(log(myts)))
+
+```
+##########################################################################
+# The time series myts has trend, seasonality, and increasing variance.
+# The natural log and first difference were taken to remove these aspects.
+# The resulting time series still has seasonality.
+##########################################################################
+# Now we will try forecast methods and evaluate them.
+##########################################################################
+```{r}
+####################################################
+# To begin, the seasonal naive model will be used.
+####################################################
+fitsn <- snaive(myts, h=180) # Residual SD = 0.7978
+print(summary(fitsn))
+checkresiduals(fitsn)
+
+######################################
+# Now we will try the fit ETS method
+######################################
+fitets <- ets(myts) # Residual SD = 0.3212
+print(summary(fitets)) # Model chose multiplicative error, additive trend, multiplicative seasonality
+checkresiduals(fitets)
+
+########################################
+# Now we will try the fit on ARIMA model
+########################################
+fitarima <- auto.arima(myts, stepwise=FALSE, approximation=FALSE, trace=TRUE) # 1245
+print(summary(fitarima))
+checkresiduals(fitarima)
+
+########################################
+# Forecast with Seasonal Naive method
+########################################
+fcstsn <- forecast(fitsn, h=160)
+autoplot(fcstsn)
+
+########################################
+# Forecast with ETS method
+########################################
+fcstets <- forecast(fitets, h=160)
+autoplot(fcstets)
+
+########################################
+# Forecast with ARIMA method
+########################################
+fcstarima <- forecast(fitarima, h=160)
+autoplot(fcstarima)
+
+```
+```{r}
+# ETS method prediction.
+sumtonow<-sum(datafinal$TotalVaccinations)
+popvalue = 656400000 - sumtonow
+length(which(cumsum(fcstets$mean) <= popvalue))
+# The result for ETS is 161, or July 28th
+```
+
+```{r}
+# Now we will use the ARIMA model to predict.
+sumtonow<-sum(datafinal$TotalVaccinations)
+popvalue = 656400000 - sumtonow
+length(which(cumsum(fcstarima$mean) <= popvalue))
+# The result for ARIMA is 147, or August 7th
+```
+```{r appendix, echo=TRUE, eval=FALSE, ref.label=all_labels()}
+
+```
+
